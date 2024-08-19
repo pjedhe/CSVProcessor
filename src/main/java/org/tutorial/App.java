@@ -1,7 +1,6 @@
 package org.tutorial;
 
 import com.google.gson.Gson;
-import lombok.val;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -20,15 +19,33 @@ import java.util.Objects;
 
 public class App 
 {
-    public static void main( String[] args ) throws IOException {
+    public static final String TESTCUSTOMER_CSV = "testcustomer.csv";
+    public static String CUSTOMER_SERVICE_HOST_PORT = "http://localhost:8080";
+    public static String CUSTOMER_CREATE_PATH = "/api/create";
+    public static String getCustomerServiceUrl(String[] args) {
+        if(args!=null && args.length > 0) {
+            return args[0] + CUSTOMER_CREATE_PATH ;
+        }
+        return CUSTOMER_SERVICE_HOST_PORT + CUSTOMER_CREATE_PATH;
+    }
+
+    public static File getCSVFile(String[] args) {
+        if(args!=null && args.length > 1) {
+            return new File(args[1]);
+        }
         ClassLoader classLoader = App.class.getClassLoader();
-        File file = new File(Objects.requireNonNull(classLoader.getResource("testcustomer.csv")).getFile());
+        return new File(Objects.requireNonNull(classLoader.getResource(TESTCUSTOMER_CSV)).getFile());
+
+    }
+    public static void main( String[] args ) throws IOException {
+        File file = getCSVFile(args);
         List<Customer> customers = CustomerCSVService.getCustomers(file);
         Gson gson = new Gson();
-        String url = "http://localhost:8080/api/create";
+
+        String url = getCustomerServiceUrl(args);
         for(Customer customer: customers) {
             System.out.println(gson.toJson(customer));
-            post(url, gson.toJson(customer) );
+            System.out.println(post(url, gson.toJson(customer) ));
         }
 
     }
